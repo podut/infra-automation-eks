@@ -10,7 +10,7 @@ variable name {
 }
 
 variable k8s_version {
-    default = "1.27"
+    default = "1.28"
 }
 
 variable vpc_cidr_block {
@@ -28,3 +28,6 @@ variable tags {
         App  = "eks-devsecops"
     }
 }
+
+variable user_for_admin_role {}
+variable user_for_dev_role {}
