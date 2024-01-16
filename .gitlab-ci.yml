@@ -1,9 +1,18 @@
+include:
+- template: Terraform/Base.gitlab-ci.yml
+
 stages:
+- validate
 - build
+- deploy
+- cleanup
 
 image:
-  name: amazon/aws-cli:latest
+  name: techworldwithnana/terraform-build:latest
   entrypoint: [""]
+
+validate:
+  extends: .terraform:validate
 
 build:
   id_tokens:
@@ -21,5 +30,46 @@ build:
     --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
     --output text))
   - aws sts get-caller-identity
-  script:
-  - echo "connected to AWS from GitLab and retrived credentials"
+  extends: .terraform:build
+  environment:
+    name: $TF_STATE_NAME
+  
+deploy:
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  stage: deploy
+  before_script:
+  - >
+    export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s"
+    $(aws sts assume-role-with-web-identity
+    --role-arn ${ROLE_ARN}
+    --role-session-name "GitLabRunner-${CI_PROJECT_ID}-${CI_PIPELINE_ID}"
+    --web-identity-token ${GITLAB_OIDC_TOKEN}
+    --duration-seconds 3600
+    --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
+    --output text))
+  - aws sts get-caller-identity
+  extends: .terraform:deploy
+  environment:
+    name: $TF_STATE_NAME
+
+cleanup:
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  stage: cleanup
+  before_script:
+  - >
+    export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s"
+    $(aws sts assume-role-with-web-identity
+    --role-arn ${ROLE_ARN}
+    --role-session-name "GitLabRunner-${CI_PROJECT_ID}-${CI_PIPELINE_ID}"
+    --web-identity-token ${GITLAB_OIDC_TOKEN}
+    --duration-seconds 3600
+    --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
+    --output text))
+  - aws sts get-caller-identity
+  extends: .terraform:destroy
+  environment:
+    name: $TF_STATE_NAME
