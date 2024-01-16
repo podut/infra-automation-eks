@@ -56,7 +56,7 @@ deploy:
   - aws sts get-caller-identity
   extends: .terraform:deploy
   rules:
-    when: manual
+    - when: manual
   environment:
     name: $TF_STATE_NAME
 
