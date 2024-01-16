@@ -1,6 +1,10 @@
 include:
 - template: Terraform/Base.gitlab-ci.yml
 
+variables:
+  TF_VAR_user_for_admin_role: $ADMIN_USER_ARN
+  TF_VAR_user_for_dev_role: $DEV_USER_ARN
+
 stages:
 - validate
 - build
