@@ -68,7 +68,7 @@ module "eks" {
 
 resource "terraform_data" "cluster" {
   provisioner "local-exec" {
-    command = "aws eks get-token --cluster-name ${module.eks.cluster_name}"
+    command = "aws eks update-kubeconfig --name ${module.eks.cluster_name}"
   }
 }
 
