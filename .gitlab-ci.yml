@@ -4,6 +4,9 @@ include:
 variables:
   TF_VAR_user_for_admin_role: $ADMIN_USER_ARN
   TF_VAR_user_for_dev_role: $DEV_USER_ARN
+  TF_VAR_aws_region: eu-central-1
+  TF_VAR_name: myapp-eks
+
 
 stages:
 - validate
@@ -54,6 +57,7 @@ deploy:
     --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
     --output text))
   - aws sts get-caller-identity
+  - aws eks update-kubeconfig --region ${TF_VAR_aws_region} --name ${TF_VAR_name}
   extends: .terraform:deploy
   rules:
     - when: manual

@@ -66,19 +66,9 @@ module "eks" {
   tags = var.tags
 }
 
-resource "terraform_data" "cluster" {
-  triggers_replace = [timestamp()]
-
-  provisioner "local-exec" {
-    command = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name} && cp -r /home/root/.kube /home/gitlab-runner/.kube"
-  }
-}
-
 module "eks_blueprints_addons" {
   source = "aws-ia/eks-blueprints-addons/aws"
   version = "~> 1.0" #ensure to update this to the latest/desired version
-
-  depends_on = [terraform_data.cluster, module.eks]
 
   cluster_name      = module.eks.cluster_name
   cluster_endpoint  = module.eks.cluster_endpoint
