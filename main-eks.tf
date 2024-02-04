@@ -70,7 +70,7 @@ resource "terraform_data" "cluster" {
   triggers_replace = [timestamp()]
 
   provisioner "local-exec" {
-    command = "aws eks update-kubeconfig --name ${module.eks.cluster_name}"
+    command = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name}"
   }
 }
 
