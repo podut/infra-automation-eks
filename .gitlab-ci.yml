@@ -58,7 +58,7 @@ deploy:
     --output text))
   - aws sts get-caller-identity
   - aws eks update-kubeconfig --region ${TF_VAR_aws_region} --name ${TF_VAR_name} 
-  - mkdir /home/gitlab-runner/.kube && cp -r /root/.kube /home/gitlab-runner/.kube
+  - export KUBE_CONFIG_PATH=/root/.kube/config
   extends: .terraform:deploy
   rules:
     - when: manual
