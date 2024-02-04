@@ -66,7 +66,13 @@ module "eks" {
   tags = var.tags
 }
 
+resource "terraform_data" "cluster" {
+  triggers_replace = [timestamp()]
 
+  provisioner "local-exec" {
+    command = "aws eks update-kubeconfig --name ${module.eks.cluster_name}"
+  }
+}
 
 module "eks_blueprints_addons" {
   source = "aws-ia/eks-blueprints-addons/aws"
