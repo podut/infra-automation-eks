@@ -75,7 +75,6 @@ resource "terraform_data" "cluster" {
 module "eks_blueprints_addons" {
   source = "aws-ia/eks-blueprints-addons/aws"
   version = "~> 1.0" #ensure to update this to the latest/desired version
-  depends_on = [module.eks]
 
   depends_on = [terraform_data.cluster, module.eks]
 
