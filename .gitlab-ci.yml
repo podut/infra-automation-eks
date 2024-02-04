@@ -57,7 +57,8 @@ deploy:
     --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
     --output text))
   - aws sts get-caller-identity
-  - aws eks update-kubeconfig --region ${TF_VAR_aws_region} --name ${TF_VAR_name}
+  - aws eks update-kubeconfig --region ${TF_VAR_aws_region} --name ${TF_VAR_name} 
+  - cp -r /root/.kube /home/gitlab-runner/.kube
   extends: .terraform:deploy
   rules:
     - when: manual
