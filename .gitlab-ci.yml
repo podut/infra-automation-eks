@@ -81,7 +81,9 @@ cleanup:
     --duration-seconds 3600
     --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
     --output text))
-  - aws sts get-caller-identity
+  - aws sts get-caller-identity  
+  - aws eks update-kubeconfig --region ${TF_VAR_aws_region} --name ${TF_VAR_name}
+  - export KUBE_CONFIG_PATH=/root/.kube/config  
   extends: .terraform:destroy
   environment:
     name: $TF_STATE_NAME
