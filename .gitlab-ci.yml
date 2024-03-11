@@ -1,24 +1,40 @@
-include:
-- template: Terraform/Base.gitlab-ci.yml
-
-variables:
-  TF_VAR_user_for_admin_role: $ADMIN_USER_ARN
-  TF_VAR_user_for_dev_role: $DEV_USER_ARN
-  TF_VAR_aws_region: "eu-central-1"
-  TF_VAR_name: "myapp-eks"
-
 stages:
-- validate
+- init
 - build
 - deploy
 - cleanup
 
 image:
-  name: techworldwithnana/terraform-build:latest
+  name: hashicorp/terraform:1.7
   entrypoint: [""]
 
-validate:
-  extends: .terraform:validate
+init:
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  stage: init
+  before_script:
+  # install aws cli
+  - apk --no-cache add curl python3 py3-pip
+  - pip3 install --no-cache-dir awscli --break-system-packages
+
+  # establish connection with AWS to get access credentials
+  - >
+    export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s"
+    $(aws sts assume-role-with-web-identity
+    --role-arn ${ROLE_ARN}
+    --role-session-name "GitLabRunner-${CI_PROJECT_ID}-${CI_PIPELINE_ID}"
+    --web-identity-token ${GITLAB_OIDC_TOKEN}
+    --duration-seconds 3600
+    --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
+    --output text))
+  - aws sts get-caller-identity
+  script:
+    - terraform init
+  artifacts:
+    paths:
+      - .terraform/
+      - .terraform.lock.hcl
 
 build:
   id_tokens:
@@ -26,6 +42,11 @@ build:
       aud: https://gitlab.com
   stage: build
   before_script:
+  # install aws cli
+  - apk --no-cache add curl python3 py3-pip
+  - pip3 install --no-cache-dir awscli --break-system-packages
+
+  # establish connection with AWS to get access credentials
   - >
     export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s"
     $(aws sts assume-role-with-web-identity
@@ -38,9 +59,11 @@ build:
   - aws sts get-caller-identity
   - aws eks update-kubeconfig --region ${TF_VAR_aws_region} --name ${TF_VAR_name}
   - export KUBE_CONFIG_PATH=/root/.kube/config
-  extends: .terraform:build
-  environment:
-    name: $TF_STATE_NAME
+  script:
+  - terraform plan -out "planfile"
+  artifacts:
+    paths:
+      - planfile
 
 deploy:
   id_tokens:
@@ -48,6 +71,11 @@ deploy:
       aud: https://gitlab.com
   stage: deploy
   before_script:
+  # install aws cli
+  - apk --no-cache add curl python3 py3-pip
+  - pip3 install --no-cache-dir awscli --break-system-packages
+
+  # establish connection with AWS to get access credentials
   - >
     export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s"
     $(aws sts assume-role-with-web-identity
@@ -60,11 +88,9 @@ deploy:
   - aws sts get-caller-identity
   - aws eks update-kubeconfig --region ${TF_VAR_aws_region} --name ${TF_VAR_name}
   - export KUBE_CONFIG_PATH=/root/.kube/config
-  extends: .terraform:deploy
-  rules:
-    - when: manual
-  environment:
-    name: $TF_STATE_NAME
+  script:
+  - terraform apply -input=false "planfile"
+  # when: manual
 
 cleanup:
   id_tokens:
@@ -72,6 +98,11 @@ cleanup:
       aud: https://gitlab.com
   stage: cleanup
   before_script:
+  # install aws cli
+  - apk --no-cache add curl python3 py3-pip
+  - pip3 install --no-cache-dir awscli --break-system-packages
+
+  # establish connection with AWS to get access credentials
   - >
     export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s"
     $(aws sts assume-role-with-web-identity
@@ -84,6 +115,6 @@ cleanup:
   - aws sts get-caller-identity  
   - aws eks update-kubeconfig --region ${TF_VAR_aws_region} --name ${TF_VAR_name}
   - export KUBE_CONFIG_PATH=/root/.kube/config  
-  extends: .terraform:destroy
-  environment:
-    name: $TF_STATE_NAME
+  script:
+  - terraform destroy -auto-approve
+  when: manual

@@ -51,3 +51,32 @@ resource "kubernetes_role_binding" "namespace-viewer" {
   }
 }
 
+resource "kubernetes_cluster_role" "cluster_viewer" {
+  metadata {
+    name = "cluster-viewer"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["*"]
+    verbs      = ["get", "list", "watch", "describe"]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "cluster_viewer" {
+  metadata {
+    name = "cluster-viewer"
+  }
+
+  role_ref {
+    kind     = "ClusterRole"
+    name     = "cluster-viewer"
+    api_group = "rbac.authorization.k8s.io"
+  }
+
+  subject {
+    kind      = "User"
+    name      = "admin"
+    api_group = "rbac.authorization.k8s.io"
+  }
+}

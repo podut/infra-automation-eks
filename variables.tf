@@ -1,5 +1,5 @@
 variable aws_region {
-  default = "eu-central-1"
+  default = "eu-west-1"
 }
 
 variable name {
