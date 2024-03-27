@@ -113,6 +113,7 @@ deploy_argocd:
   - export KUBE_CONFIG_PATH=/root/.kube/config
   script:
   - kubectl apply -f online-boutique-argo-app.yaml
+  - kubectl apply -f platform-argo-app.yaml
 
 cleanup:
   id_tokens:
