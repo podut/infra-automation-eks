@@ -12,6 +12,10 @@ provider "kubernetes" {
 resource "kubernetes_namespace" "online-boutique" {
   metadata {
     name = "online-boutique"
+
+    labels = {
+      "istio-injection" = "enabled"
+    }
   }
 }
 

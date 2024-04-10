@@ -61,6 +61,41 @@ module "eks" {
       max_size     = 20
       desired_size = 4
     }
+    istio = {
+      instance_types = ["t3.medium"]
+      min_size     = 2
+      max_size     = 10
+      desired_size = 4
+    }
+  }
+  
+  node_security_group_additional_rules = {
+    ingress_15017 = {
+      description                   = "Cluster API to Istio Webhook namespace.sidecar-injector.istio.io"
+      protocol                      = "TCP"
+      from_port                     = 15017
+      to_port                       = 15017
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
+    
+    ingress_15012 = {
+      description                   = "Cluster API to nodes ports/protocols"
+      protocol                      = "TCP"
+      from_port                     = 15012
+      to_port                       = 15012
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
+    
+    ingress_istio_sg = {
+      description                   = "LB port forward to nodes"
+      protocol                      = "TCP"
+      from_port                     = 30000
+      to_port                       = 32767
+      type                          = "ingress"
+      source_security_group_id      = aws_security_group.istio-gateway-lb.id
+    }
   }
 
   tags = var.tags
