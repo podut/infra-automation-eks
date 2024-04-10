@@ -7,7 +7,7 @@ variable name {
 }
 
 variable k8s_version {
-    default = "1.28"
+    default = "1.29"
 }
 
 variable vpc_cidr_block {
