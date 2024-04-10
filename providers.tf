@@ -1,9 +1,9 @@
 terraform {
   required_version = ">= 1.0"
   backend "s3" {
-    bucket = "test-policy-as-code"
+    bucket = "infra-bucket-12"
     key = "infra/state.tfstate"
-    region = "us-east-1"
+    region = "eu-central-1"
   }
   required_providers {
     aws = {
