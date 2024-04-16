@@ -21,6 +21,7 @@ resource "helm_release" "argocd" {
   depends_on       = [
     module.eks
   ]
+  values = [file("argocd-values.yaml")]
 }
 
 resource "kubernetes_secret" "argocd_gitops_repo" {
