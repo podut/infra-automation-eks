@@ -86,7 +86,7 @@ resource "kubernetes_cluster_role" "cluster_viewer" {
 
   rule {
     api_groups = [""]
-    resources = ["pods/exec"]
+    resources = ["pods/exec", "pods/attach"]
     verbs = ["get", "list", "create"]
   }
   
