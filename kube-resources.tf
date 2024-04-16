@@ -83,6 +83,18 @@ resource "kubernetes_cluster_role" "cluster_viewer" {
     resources = ["peerauthentications"]
     verbs = ["get", "list", "describe"]
   }
+
+  rule {
+    api_groups = [""]
+    resources = ["pods/exec"]
+    verbs = ["get", "list", "create"]
+  }
+  
+  rule {
+    api_groups = [""]
+    resources = ["pods"]
+    verbs = ["get", "list", "create", "describe", "delete", "update"]
+  }
 }
 
 resource "kubernetes_cluster_role_binding" "cluster_viewer" {
