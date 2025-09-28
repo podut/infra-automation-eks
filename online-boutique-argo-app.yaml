@@ -9,7 +9,7 @@ spec:
     server: https://kubernetes.default.svc
     namespace: default
   source:
-    repoURL: https://gitlab.com/twn-devsecops-bootcamp/latest/online-boutique-gitops.git
+    repoURL: https://github.com/podut/online-boutique-gitops.git
     path: overlays/dev
     targetRevision: main
   syncPolicy:
